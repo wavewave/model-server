@@ -1,0 +1,29 @@
+Name:		xournal-web
+Version:	0.0
+Synopsis:	web server for xournal
+Description: 	web server for xournal
+License: 	BSD3
+License-file:	LICENSE
+Author:		Ian-Woo Kim
+Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
+Build-Type: 	Simple
+Cabal-Version:  >= 1.8
+
+Executable xournal-web
+  Main-is: xournal-web.hs
+  hs-source-dirs: exe
+  Build-Depends: base>4, mtl>2, yesod, yesod-core, 
+                 bytestring, enumerator, wai-extra, wai, xournal-web
+  ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
+
+Library
+  hs-source-dirs: lib
+  ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
+  Build-Depends: base>4, containers, mtl>2, yesod
+  Exposed-Modules: 
+                   Application.Xournal.Server.Yesod
+
+
+		 
