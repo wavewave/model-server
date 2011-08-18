@@ -6,30 +6,31 @@
 
 
 
-module Application.Xournal.Server.Yesod where 
+module HEP.Automation.Model.Server.Yesod where 
 
 import Yesod hiding (update)
 
-data XournalWeb = XournalWeb
+data ModelServer = ModelServer
 
-mkYesod "XournalWeb" [parseRoutes|
+mkYesod "ModelServer" [parseRoutes|
 / HomeR GET
-/xoj/#Int/page/#Int XojPageR GET
+/model/#String ModelR GET
 |]
 
-instance Yesod XournalWeb where
+instance Yesod ModelServer where
   approot _ = ""
 
-type Handler = GHandler XournalWeb XournalWeb
+type Handler = GHandler ModelServer ModelServer
 
 getHomeR :: Handler RepHtml 
 getHomeR = do 
   liftIO $ putStrLn "getHomeR called"
   defaultLayout [hamlet|Hello World!|]
 
-getXojPageR :: Int -> Int -> Handler RepHtml
-getXojPageR filenum pagenum = do 
-  defaultLayout [hamlet| <h1> File #{filenum}
-                         <p
-                            Page #{pagenum} |]
+getModelR :: String -> Handler RepHtml
+getModelR modelname = do 
+  defaultLayout [hamlet| <h1> File #{modelname}
+|]
+
+
 
