@@ -1,5 +1,5 @@
 Name:		model-server
-Version:	0.0
+Version:	0.0.1.0
 Synopsis:	FeynRules model retrieving server
 Description: 	FeynRules model retrieving server
 License: 	BSD3
@@ -13,7 +13,8 @@ Executable model-server
   Main-is: model-server.hs
   hs-source-dirs: exe
   Build-Depends: base>4, mtl>2, yesod, yesod-core, 
-                 bytestring, enumerator, wai-extra, wai, model-server
+                 bytestring, enumerator, wai-extra, wai, model-server,
+                 model-type, containers, acid-state
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
 
@@ -21,7 +22,7 @@ Library
   hs-source-dirs: lib
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
-  Build-Depends: base>4, containers, mtl>2, yesod
+  Build-Depends: base>4, containers, mtl>2, yesod, model-type, safecopy>0.5, acid-state>0.4
   Exposed-Modules: 
                    HEP.Automation.Model.Server.Yesod
 
