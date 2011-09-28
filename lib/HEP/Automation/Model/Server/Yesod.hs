@@ -39,12 +39,30 @@ mkYesod "ModelServer" [parseRoutes|
 instance Yesod ModelServer where
   approot _ = ""
 
-type Handler = GHandler ModelServer ModelServer
+-- type Handler = GHandler ModelServer ModelServer
+
+makeRepHtmlFromHamlet hlet = do
+  RepHtml rhtml <- hamletToRepHtml hlet 
+--  RepJson json <- jsonToRepJson 
+  return (RepHtml rhtml) 
+
 
 getHomeR :: Handler RepHtml 
 getHomeR = do 
   liftIO $ putStrLn "getHomeR called"
-  defaultLayout [hamlet|Hello World!|]
+  makeRepHtmlFromHamlet [hamlet|
+!!!
+<html>
+  <head> 
+    <title> test 
+  <body> 
+    <h1> hello world 
+|]
+
+--  defaultLayout rhtml 
+
+
+-- Hello World!|]
 
 
 getListModelR :: Handler RepHtml
