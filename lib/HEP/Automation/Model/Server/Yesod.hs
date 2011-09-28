@@ -39,12 +39,16 @@ mkYesod "ModelServer" [parseRoutes|
 instance Yesod ModelServer where
   approot _ = ""
 
--- type Handler = GHandler ModelServer ModelServer
-
+makeRepHtmlFromHamlet :: HtmlUrl (Route ModelServer) -> Handler RepHtml
 makeRepHtmlFromHamlet hlet = do
   RepHtml rhtml <- hamletToRepHtml hlet 
---  RepJson json <- jsonToRepJson 
   return (RepHtml rhtml) 
+
+makeRepHtmlJsonFromHamletJson :: HtmlUrl (Route ModelServer) -> Value -> Handler RepHtmlJson
+makeRepHtmlJsonFromHamletJson hlet j = do
+  RepHtml rhtml <- hamletToRepHtml hlet 
+  RepJson json <- jsonToRepJson j 
+  return (RepHtmlJson rhtml json) 
 
 
 getHomeR :: Handler RepHtml 
@@ -81,11 +85,15 @@ handleModelR name = do
 
 getModelR :: String -> Handler RepHtmlJson
 getModelR modelname = do 
+
   liftIO $ putStrLn "getModelR called"
   acid <- return.server_acid =<< getYesod
   r <- liftIO $ query acid (QueryModel modelname)
   liftIO $ putStrLn $ show r 
-  defaultLayoutJson [hamlet| <h1> File #{modelname}|] (G.toJSON r)
+  let hlet = [hamlet| <h1> File #{modelname}|]
+  makeRepHtmlJsonFromHamletJson hlet (G.toJSON r)
+
+--  defaultLayoutJson [hamlet| <h1> File #{modelname}|] (G.toJSON r)
 
 putModelR :: String -> Handler RepHtmlJson
 putModelR modelname = do 
@@ -101,31 +109,31 @@ putModelR modelname = do
         Success minfo -> do 
           if modelname == model_name minfo
             then do r <- liftIO $ update acid (UpdateModel minfo)
-                    defaultLayoutJson [hamlet| <h1> File #{modelname}|] 
-                                      (G.toJSON r)
+                    makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
+                                                  (G.toJSON r)
             else do liftIO $ putStrLn "modelname mismatched"
-                    defaultLayoutJson [hamlet| <h1> File #{modelname}|] 
-                                      (G.toJSON (Nothing :: Maybe ModelInfo))
+                    makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
+                                                  (G.toJSON (Nothing :: Maybe ModelInfo))
         Error err -> do 
           liftIO $ putStrLn err 
-          defaultLayoutJson [hamlet| <h1> File #{modelname}|] 
-                            (G.toJSON (Nothing :: Maybe ModelInfo))
+          makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
+                                        (G.toJSON (Nothing :: Maybe ModelInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      defaultLayoutJson [hamlet| <h1> File #{modelname}|] 
-                        (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
+                                    (G.toJSON (Nothing :: Maybe ModelInfo))
          
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      defaultLayoutJson [hamlet| <h1> File #{modelname}|] 
-                        (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
+                                    (G.toJSON (Nothing :: Maybe ModelInfo))
 
 deleteModelR :: String -> Handler RepHtmlJson
 deleteModelR modelname = do 
   acid <- return.server_acid =<< getYesod
   r <- liftIO $ update acid (DeleteModel modelname)
   liftIO $ putStrLn $ show r 
-  defaultLayoutJson [hamlet| <h1> File #{modelname}|] (G.toJSON r)
+  makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] (G.toJSON r)
 
 postModelUploadR :: Handler RepHtmlJson
 postModelUploadR = do 
@@ -140,21 +148,21 @@ postModelUploadR = do
       case (G.fromJSON parsedjson :: A.Result ModelInfo) of 
         Success minfo -> do 
           r <- liftIO $ update acid (AddModel minfo)
-          defaultLayoutJson [hamlet| <h1> Posted|] 
-                            (G.toJSON r)
+          makeRepHtmlJsonFromHamletJson [hamlet| <h1> Posted|] 
+                                        (G.toJSON r)
         Error err -> do 
           liftIO $ putStrLn err 
-          defaultLayoutJson [hamlet| <h1> Not posted|] 
-                            (G.toJSON (Nothing :: Maybe ModelInfo))
+          makeRepHtmlJsonFromHamletJson [hamlet| <h1> Not posted|] 
+                                        (G.toJSON (Nothing :: Maybe ModelInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      defaultLayoutJson [hamlet| <h1> Not posted|] 
-                        (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson [hamlet| <h1> Not posted|] 
+                                    (G.toJSON (Nothing :: Maybe ModelInfo))
          
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      defaultLayoutJson [hamlet| <h1> Not posted|] 
-                        (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson [hamlet| <h1> Not posted|] 
+                                    (G.toJSON (Nothing :: Maybe ModelInfo))
 
 
 
