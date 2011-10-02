@@ -67,13 +67,42 @@ getHomeR = do
 
 
 -- Hello World!|]
+defhlet = [hamlet| <h1> HTML output not supported |]
 
 
-getListModelR :: Handler RepHtml
-getListModelR = undefined
+getListModelR :: Handler RepHtmlJson
+getListModelR = do 
+  liftIO $ putStrLn "getQueueListR called" 
+  acid <- return.server_acid =<< getYesod
+  r <- liftIO $ query acid QueryAll
+  makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
+
 
 postUploadModelR :: Handler RepHtmlJson
-postUploadModelR = undefined
+postUploadModelR = do 
+  liftIO $ putStrLn "postQueueR called" 
+  acid <- return.server_acid =<< getYesod
+  _ <- getRequest
+  bs' <- lift E.consume
+  let bs = S.concat bs' 
+  let parsed = parse json bs 
+  case parsed of 
+    Done _ parsedjson -> do 
+      case (G.fromJSON parsedjson :: A.Result ModelInfo) of 
+        Success minfo -> do 
+          r <- liftIO $ update acid (AddModel minfo)
+          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
+        Error err -> do 
+          liftIO $ putStrLn err 
+          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+    Fail _ ctxts err -> do 
+      liftIO $ putStrLn (concat ctxts++err)
+      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+    Partial _ -> do 
+      liftIO $ putStrLn "partial" 
+      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+
+
 
 handleModelR :: String -> Handler RepHtmlJson
 handleModelR name = do
@@ -85,15 +114,13 @@ handleModelR name = do
 
 getModelR :: String -> Handler RepHtmlJson
 getModelR modelname = do 
-
   liftIO $ putStrLn "getModelR called"
   acid <- return.server_acid =<< getYesod
   r <- liftIO $ query acid (QueryModel modelname)
   liftIO $ putStrLn $ show r 
   let hlet = [hamlet| <h1> File #{modelname}|]
-  makeRepHtmlJsonFromHamletJson hlet (G.toJSON r)
+  makeRepHtmlJsonFromHamletJson hlet (G.toJSON (Just r))
 
---  defaultLayoutJson [hamlet| <h1> File #{modelname}|] (G.toJSON r)
 
 putModelR :: String -> Handler RepHtmlJson
 putModelR modelname = do 
@@ -109,31 +136,26 @@ putModelR modelname = do
         Success minfo -> do 
           if modelname == model_name minfo
             then do r <- liftIO $ update acid (UpdateModel minfo)
-                    makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
-                                                  (G.toJSON r)
+                    makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
             else do liftIO $ putStrLn "modelname mismatched"
-                    makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
-                                                  (G.toJSON (Nothing :: Maybe ModelInfo))
+                    makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
         Error err -> do 
           liftIO $ putStrLn err 
-          makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
-                                        (G.toJSON (Nothing :: Maybe ModelInfo))
+          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
-                                    (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
          
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] 
-                                    (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
 
 deleteModelR :: String -> Handler RepHtmlJson
 deleteModelR modelname = do 
   acid <- return.server_acid =<< getYesod
   r <- liftIO $ update acid (DeleteModel modelname)
   liftIO $ putStrLn $ show r 
-  makeRepHtmlJsonFromHamletJson [hamlet| <h1> File #{modelname}|] (G.toJSON r)
+  makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
 
 postModelUploadR :: Handler RepHtmlJson
 postModelUploadR = do 
@@ -148,21 +170,17 @@ postModelUploadR = do
       case (G.fromJSON parsedjson :: A.Result ModelInfo) of 
         Success minfo -> do 
           r <- liftIO $ update acid (AddModel minfo)
-          makeRepHtmlJsonFromHamletJson [hamlet| <h1> Posted|] 
-                                        (G.toJSON r)
+          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
         Error err -> do 
           liftIO $ putStrLn err 
-          makeRepHtmlJsonFromHamletJson [hamlet| <h1> Not posted|] 
-                                        (G.toJSON (Nothing :: Maybe ModelInfo))
+          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      makeRepHtmlJsonFromHamletJson [hamlet| <h1> Not posted|] 
-                                    (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
          
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      makeRepHtmlJsonFromHamletJson [hamlet| <h1> Not posted|] 
-                                    (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
 
 
 
