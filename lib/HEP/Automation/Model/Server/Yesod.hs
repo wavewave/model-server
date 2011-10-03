@@ -25,6 +25,11 @@ import Data.Aeson as A
 import Data.Aeson.Parser
 import qualified Data.Aeson.Generic as G
 
+import Control.Applicative
+import Data.Text hiding (concat)
+
+import HEP.Automation.Model.Server.Form 
+
 data ModelServer = ModelServer {
   server_acid :: AcidState ModelInfoRepository
 }
@@ -34,10 +39,14 @@ mkYesod "ModelServer" [parseRoutes|
 /listmodel  ListModelR GET
 /uploadmodel  UploadModelR POST
 /model/#String ModelR 
+/uploadmodelform UploadModelFormR GET POST
 |]
 
 instance Yesod ModelServer where
   approot _ = ""
+
+instance RenderMessage ModelServer FormMessage where
+  renderMessage _ _ = defaultFormMessage
 
 makeRepHtmlFromHamlet :: HtmlUrl (Route ModelServer) -> Handler RepHtml
 makeRepHtmlFromHamlet hlet = do
@@ -183,4 +192,23 @@ postModelUploadR = do
       makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
 
 
+getUploadModelFormR :: Handler RepHtml
+getUploadModelFormR = do 
+  ((_,widget),enctype) <- generateFormPost modelForm 
+  defaultLayout [whamlet| 
+<form method=post action=@{UploadModelFormR} enctype=#{enctype}>
+  ^{widget}
+  <input type=submit >
+test 
+|] 
 
+
+
+postUploadModelFormR :: Handler RepHtml
+postUploadModelFormR = do 
+  liftIO $ putStrLn "postUploadModelFormR called"
+  ((result,widget),enctype) <- runFormPost modelForm 
+  defaultLayout [whamlet| 
+<p> postUploadModelR called #{show result}
+|] 
+  

@@ -23,9 +23,11 @@ Library
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
   Build-Depends: base>4, containers, mtl>2, yesod, model-type, safecopy>0.5, acid-state>0.4, 
-                 aeson-native, bytestring>0.9, enumerator>0.4, wai-extra, wai, attoparsec
+                 aeson-native, bytestring>0.9, enumerator>0.4, wai-extra, wai, attoparsec, 
+                 text, yesod-core>0.9.1, yesod-form>0.3, blaze-html>0.4.1
   Exposed-Modules: 
                    HEP.Automation.Model.Server.Yesod
+                   HEP.Automation.Model.Server.Form
 
 
 		 
