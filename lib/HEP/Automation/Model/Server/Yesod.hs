@@ -44,6 +44,7 @@ mkYesod "ModelServer" [parseRoutes|
 
 instance Yesod ModelServer where
   approot _ = ""
+  maximumContentLength _ _ = 100000000
 
 instance RenderMessage ModelServer FormMessage where
   renderMessage _ _ = defaultFormMessage
@@ -208,7 +209,12 @@ postUploadModelFormR :: Handler RepHtml
 postUploadModelFormR = do 
   liftIO $ putStrLn "postUploadModelFormR called"
   ((result,widget),enctype) <- runFormPost modelForm 
-  defaultLayout [whamlet| 
-<p> postUploadModelR called #{show result}
+ 
+  case result of 
+    FormSuccess r -> defaultLayout [whamlet| 
+<p> postUploadModelR called #{show (modelName r)}
+|]
+    _ -> defaultLayout [whamlet|
+<p> postUploadModelR called, not Success
 |] 
   
