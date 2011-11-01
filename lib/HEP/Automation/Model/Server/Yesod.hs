@@ -17,6 +17,8 @@ import qualified Data.Enumerator as E
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as SC
 
+import qualified Data.ByteString.Lazy as LS
+
 import HEP.Automation.Model.Type
 import Data.Acid
 
@@ -210,9 +212,16 @@ postUploadModelFormR = do
   liftIO $ putStrLn "postUploadModelFormR called"
   ((result,widget),enctype) <- runFormPost modelForm 
  
+
+
   case result of 
-    FormSuccess r -> defaultLayout [whamlet| 
-<p> postUploadModelR called #{show (modelName r)}
+    FormSuccess r -> do 
+      liftIO (LS.putStrLn (Yesod.fileContent (modelFeynRulesFile r)))
+      defaultLayout [whamlet| 
+<p> postUploadModelR called 
+<p> model name = #{show (modelName r)}
+<p> file name = #{show (Yesod.fileName (modelFeynRulesFile r))}
+<p> file content type = #{show (Yesod.fileContentType (modelFeynRulesFile r))}
 |]
     _ -> defaultLayout [whamlet|
 <p> postUploadModelR called, not Success
