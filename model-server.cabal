@@ -1,5 +1,5 @@
 Name:		model-server
-Version:	0.0.2.0
+Version:	0.0.2.1
 Synopsis:	FeynRules model retrieving server
 Description: 	FeynRules model retrieving server
 License: 	BSD3
@@ -12,9 +12,14 @@ Cabal-Version:  >= 1.8
 Executable model-server
   Main-is: model-server.hs
   hs-source-dirs: exe
-  Build-Depends: base>4, mtl>2, yesod, yesod-core, 
-                 bytestring, enumerator, wai-extra, wai, model-server,
-                 model-type, containers, acid-state
+  Build-Depends: base == 4.*, 
+                 mtl == 2.*, 
+                 yesod == 0.9.*, 
+                 yesod-core == 0.9.*, 
+                 bytestring == 0.9.*, 
+                 enumerator == 0.4.*, wai-extra, wai, model-server,
+                 model-type, containers, 
+                 acid-state == 0.4.*
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
 
@@ -22,9 +27,14 @@ Library
   hs-source-dirs: lib
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
-  Build-Depends: base>4, containers, mtl>2, yesod, model-type, safecopy>0.5, acid-state>0.4, 
-                 aeson-native, bytestring>0.9, enumerator>0.4, wai-extra, wai, attoparsec, 
-                 text, yesod-core>0.9.1, yesod-form>0.3.2, blaze-html>0.4.1
+  Build-Depends: base == 4.*, 
+                 containers, 
+                 mtl == 2.*, 
+                 yesod == 0.9.*, model-type, safecopy>0.5, 
+                 acid-state == 0.4.*, 
+                 aeson == 0.4.*, bytestring == 0.9.*, 
+                 enumerator == 0.4.* , wai-extra, wai, attoparsec, 
+                 text == 0.11.*, yesod-core>0.9.1, yesod-form>0.3.2, blaze-html>0.4.1
   Exposed-Modules: 
                    HEP.Automation.Model.Server.Yesod
                    HEP.Automation.Model.Server.Form
