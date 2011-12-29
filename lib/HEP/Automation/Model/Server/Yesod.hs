@@ -25,7 +25,7 @@ import Data.Acid
 import Data.Attoparsec as P
 import Data.Aeson as A
 import Data.Aeson.Parser
-import qualified Data.Aeson.Generic as G
+-- import qualified Data.Aeson.Generic as G
 
 import Control.Applicative
 import Data.Text hiding (concat)
@@ -44,8 +44,10 @@ mkYesod "ModelServer" [parseRoutes|
 /listmodel  ListModelR GET
 /uploadmodel  UploadModelR POST
 /model/#UUID ModelR 
-/uploadmodelform UploadModelFormR GET POST
 |]
+
+-- /uploadmodelform UploadModelFormR GET POST
+
 
 instance Yesod ModelServer where
   approot _ = ""
@@ -90,7 +92,8 @@ getListModelR = do
   liftIO $ putStrLn "getQueueListR called" 
   acid <- return.server_acid =<< getYesod
   r <- liftIO $ query acid QueryAll
-  makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
+  liftIO $ putStrLn $ show r 
+  makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Just r))
 
 
 postUploadModelR :: Handler RepHtmlJson
@@ -103,19 +106,21 @@ postUploadModelR = do
   let parsed = parse json bs 
   case parsed of 
     Done _ parsedjson -> do 
-      case (G.fromJSON parsedjson :: A.Result ModelInfo) of 
+      case (A.fromJSON parsedjson :: A.Result ModelInfo) of 
         Success minfo -> do 
           r <- liftIO $ update acid (AddModel minfo)
-          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
+          liftIO $ print (Just r)
+          liftIO $ print (A.toJSON (Just r))
+          makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Just r))
         Error err -> do 
           liftIO $ putStrLn err 
-          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+          makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
 
 
 
@@ -136,7 +141,7 @@ getModelR idee = do
   r <- liftIO $ query acid (QueryModel idee)
   liftIO $ putStrLn $ show r 
   let hlet = [hamlet| <h1> File #{idee}|]
-  makeRepHtmlJsonFromHamletJson hlet (G.toJSON (Just r))
+  makeRepHtmlJsonFromHamletJson hlet (A.toJSON (Just r))
 
 
 putModelR :: UUID -> Handler RepHtmlJson
@@ -147,33 +152,35 @@ putModelR idee = do
   bs' <- lift E.consume
   let bs = S.concat bs'
   let parsed = parse json bs 
+  liftIO $ print parsed 
   case parsed of 
     Done _ parsedjson -> do 
-      case (G.fromJSON parsedjson :: A.Result ModelInfo) of 
+      case (A.fromJSON parsedjson :: A.Result ModelInfo) of 
         Success minfo -> do 
           if idee == model_uuid minfo
             then do r <- liftIO $ update acid (UpdateModel minfo)
-                    makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
+                    makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Just r))
             else do liftIO $ putStrLn "modelname mismatched"
-                    makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+                    makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
         Error err -> do 
           liftIO $ putStrLn err 
-          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+          makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
          
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
 
 deleteModelR :: UUID -> Handler RepHtmlJson
 deleteModelR idee = do 
   acid <- return.server_acid =<< getYesod
   r <- liftIO $ update acid (DeleteModel idee)
   liftIO $ putStrLn $ show r 
-  makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
+  makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Just r))
 
+{-
 postModelUploadR :: Handler RepHtmlJson
 postModelUploadR = do 
   liftIO $ putStrLn "postModelUpdateR called"
@@ -184,20 +191,21 @@ postModelUploadR = do
   let parsed = parse json bs 
   case parsed of 
     Done _ parsedjson -> do 
-      case (G.fromJSON parsedjson :: A.Result ModelInfo) of 
+      case (A.fromJSON parsedjson :: A.Result ModelInfo) of 
         Success minfo -> do 
           r <- liftIO $ update acid (AddModel minfo)
-          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
+          liftIO $ print (A.toJSON (Just r))
+          makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Just r))
         Error err -> do 
           liftIO $ putStrLn err 
-          makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+          makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
          
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
+      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
 
 
 getUploadModelFormR :: Handler RepHtml
@@ -231,4 +239,4 @@ postUploadModelFormR = do
     _ -> defaultLayout [whamlet|
 <p> postUploadModelR called, not Success
 |] 
-  
+-}  
