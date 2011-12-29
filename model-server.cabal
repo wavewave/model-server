@@ -1,5 +1,5 @@
 Name:		model-server
-Version:	0.0.999
+Version:	0.1
 Synopsis:	CRUD sample server
 Description: 	CRUD sample server
 License: 	BSD3
@@ -13,14 +13,9 @@ Executable model-server
   Main-is: model-server.hs
   hs-source-dirs: exe
   Build-Depends: base == 4.*, 
---                 mtl == 2.*, 
                  yesod == 0.9.*, 
                  uuid == 1.2.*,
---                 yesod-core == 0.9.*, 
                  bytestring == 0.9.*, 
---                 enumerator == 0.4.*, 
---                 wai-extra, 
---                 wai,  
                  containers == 0.4.*, 
                  acid-state == 0.6.*, 
                  model-type >= 0.1.999 && < 0.3,
