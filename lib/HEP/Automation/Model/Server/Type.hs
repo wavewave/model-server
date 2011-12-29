@@ -10,7 +10,8 @@ import qualified Data.ByteString as B
 import Yesod.Dispatch
 import Text.Blaze
 import HEP.Automation.Model.Type
-import Debug.Trace 
+-- import Debug.Trace 
+import Data.Acid
 
 instance SinglePiece UUID where
   fromSinglePiece = fromString . C.unpack . E.encodeUtf8
@@ -18,3 +19,8 @@ instance SinglePiece UUID where
 
 instance ToHtml UUID where
   toHtml = toHtml . toString 
+
+data ModelServer = ModelServer {
+  server_acid :: AcidState ModelInfoRepository
+}
+

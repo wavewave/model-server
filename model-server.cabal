@@ -1,5 +1,5 @@
 Name:		model-server
-Version:	0.1
+Version:	0.1.999
 Synopsis:	CRUD sample server
 Description: 	CRUD sample server
 License: 	BSD3
@@ -18,7 +18,7 @@ Executable model-server
                  bytestring == 0.9.*, 
                  containers == 0.4.*, 
                  acid-state == 0.6.*, 
-                 model-type >= 0.1.999 && < 0.3,
+                 model-type == 0.2.*,
                  model-server
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
@@ -31,7 +31,7 @@ Library
                  containers == 0.4.*, 
                  mtl == 2.*, 
                  yesod == 0.9.*, 
-                 model-type >= 0.1.999 && < 0.3, 
+                 model-type == 0.2.*, 
                  safecopy == 0.6.*, 
                  acid-state == 0.6.*, 
                  aeson == 0.4.*, 

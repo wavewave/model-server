@@ -2,6 +2,7 @@
 
 module Main where
 
+import HEP.Automation.Model.Server.Type
 import HEP.Automation.Model.Server.Yesod
 import Yesod
 import HEP.Automation.Model.Type 
@@ -18,7 +19,7 @@ newmodel = ModelInfo {
 testm = M.insert (model_uuid newmodel) newmodel M.empty 
 
 main = do 
-  putStrLn "xournal-web"
+  putStrLn "model-server"
   acid <- openLocalState testm
   
   warpDebug 7800 (ModelServer acid)
