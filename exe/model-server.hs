@@ -1,25 +1,24 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import HEP.Automation.Model.Server.Yesod
-
 import Yesod
-
 import HEP.Automation.Model.Type 
-
+import Data.UUID.V5 
 import qualified Data.Map as M
 import Data.Acid 
+import qualified Data.ByteString as B
 
 newmodel = ModelInfo { 
-  model_name = "newmodel", 
-  model_baseurl = "http://susy.physics.lsa.umich.edu/newmodel", 
-  model_feynrules = "newmodel.fr", 
-  model_ufo = "newmodel_UFO"
+  model_uuid = generateNamed namespaceURL (B.unpack "test") ,
+  model_name = "newmodel"
 }
 
-testm = M.insert "newmodel" newmodel M.empty 
+testm = M.insert (model_uuid newmodel) newmodel M.empty 
 
 main = do 
   putStrLn "xournal-web"
-  acid <- openAcidState testm
+  acid <- openLocalState testm
   
   warpDebug 7800 (ModelServer acid)

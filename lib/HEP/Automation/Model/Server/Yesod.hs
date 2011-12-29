@@ -30,6 +30,9 @@ import qualified Data.Aeson.Generic as G
 import Control.Applicative
 import Data.Text hiding (concat)
 
+import Data.UUID
+
+import HEP.Automation.Model.Server.Type
 import HEP.Automation.Model.Server.Form 
 
 data ModelServer = ModelServer {
@@ -40,7 +43,7 @@ mkYesod "ModelServer" [parseRoutes|
 / HomeR GET
 /listmodel  ListModelR GET
 /uploadmodel  UploadModelR POST
-/model/#String ModelR 
+/model/#UUID ModelR 
 /uploadmodelform UploadModelFormR GET POST
 |]
 
@@ -116,7 +119,7 @@ postUploadModelR = do
 
 
 
-handleModelR :: String -> Handler RepHtmlJson
+handleModelR :: UUID -> Handler RepHtmlJson
 handleModelR name = do
   wr <- return.reqWaiRequest =<< getRequest
   case requestMethod wr of 
@@ -124,18 +127,20 @@ handleModelR name = do
     "PUT" -> putModelR name
     "DELETE" -> deleteModelR name
 
-getModelR :: String -> Handler RepHtmlJson
-getModelR modelname = do 
+getModelR :: UUID -> Handler RepHtmlJson
+getModelR idee = do 
   liftIO $ putStrLn "getModelR called"
   acid <- return.server_acid =<< getYesod
-  r <- liftIO $ query acid (QueryModel modelname)
+  -- muuid <- fromString uuidstr 
+ 
+  r <- liftIO $ query acid (QueryModel idee)
   liftIO $ putStrLn $ show r 
-  let hlet = [hamlet| <h1> File #{modelname}|]
+  let hlet = [hamlet| <h1> File #{idee}|]
   makeRepHtmlJsonFromHamletJson hlet (G.toJSON (Just r))
 
 
-putModelR :: String -> Handler RepHtmlJson
-putModelR modelname = do 
+putModelR :: UUID -> Handler RepHtmlJson
+putModelR idee = do 
   liftIO $ putStrLn "putModelR called"
   acid <- return.server_acid =<< getYesod
   wr <- return.reqWaiRequest =<< getRequest
@@ -146,7 +151,7 @@ putModelR modelname = do
     Done _ parsedjson -> do 
       case (G.fromJSON parsedjson :: A.Result ModelInfo) of 
         Success minfo -> do 
-          if modelname == model_name minfo
+          if idee == model_uuid minfo
             then do r <- liftIO $ update acid (UpdateModel minfo)
                     makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
             else do liftIO $ putStrLn "modelname mismatched"
@@ -162,10 +167,10 @@ putModelR modelname = do
       liftIO $ putStrLn "partial" 
       makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Nothing :: Maybe ModelInfo))
 
-deleteModelR :: String -> Handler RepHtmlJson
-deleteModelR modelname = do 
+deleteModelR :: UUID -> Handler RepHtmlJson
+deleteModelR idee = do 
   acid <- return.server_acid =<< getYesod
-  r <- liftIO $ update acid (DeleteModel modelname)
+  r <- liftIO $ update acid (DeleteModel idee)
   liftIO $ putStrLn $ show r 
   makeRepHtmlJsonFromHamletJson defhlet (G.toJSON (Just r))
 
