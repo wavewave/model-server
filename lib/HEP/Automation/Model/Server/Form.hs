@@ -3,7 +3,6 @@
 module HEP.Automation.Model.Server.Form where
 
 import Data.Text
--- import Yesod 
 import Yesod.Request
 import Yesod.Form
 import Yesod.Form.Fields

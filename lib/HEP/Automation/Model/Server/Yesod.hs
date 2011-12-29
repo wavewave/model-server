@@ -4,8 +4,6 @@
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-
-
 module HEP.Automation.Model.Server.Yesod where 
 
 import Yesod hiding (update)
@@ -25,7 +23,6 @@ import Data.Acid
 import Data.Attoparsec as P
 import Data.Aeson as A
 import Data.Aeson.Parser
--- import qualified Data.Aeson.Generic as G
 
 import Control.Applicative
 import Data.Text hiding (concat)
@@ -45,9 +42,6 @@ mkYesod "ModelServer" [parseRoutes|
 /uploadmodel  UploadModelR POST
 /model/#UUID ModelR 
 |]
-
--- /uploadmodelform UploadModelFormR GET POST
-
 
 instance Yesod ModelServer where
   approot _ = ""
@@ -80,10 +74,7 @@ getHomeR = do
     <h1> hello world 
 |]
 
---  defaultLayout rhtml 
 
-
--- Hello World!|]
 defhlet = [hamlet| <h1> HTML output not supported |]
 
 
@@ -136,8 +127,6 @@ getModelR :: UUID -> Handler RepHtmlJson
 getModelR idee = do 
   liftIO $ putStrLn "getModelR called"
   acid <- return.server_acid =<< getYesod
-  -- muuid <- fromString uuidstr 
- 
   r <- liftIO $ query acid (QueryModel idee)
   liftIO $ putStrLn $ show r 
   let hlet = [hamlet| <h1> File #{idee}|]
@@ -180,63 +169,3 @@ deleteModelR idee = do
   liftIO $ putStrLn $ show r 
   makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Just r))
 
-{-
-postModelUploadR :: Handler RepHtmlJson
-postModelUploadR = do 
-  liftIO $ putStrLn "postModelUpdateR called"
-  acid <- return.server_acid =<< getYesod
-  wr <- return.reqWaiRequest =<< getRequest
-  bs' <- lift E.consume
-  let bs = S.concat bs'
-  let parsed = parse json bs 
-  case parsed of 
-    Done _ parsedjson -> do 
-      case (A.fromJSON parsedjson :: A.Result ModelInfo) of 
-        Success minfo -> do 
-          r <- liftIO $ update acid (AddModel minfo)
-          liftIO $ print (A.toJSON (Just r))
-          makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Just r))
-        Error err -> do 
-          liftIO $ putStrLn err 
-          makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
-    Fail _ ctxts err -> do 
-      liftIO $ putStrLn (concat ctxts++err)
-      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
-         
-    Partial _ -> do 
-      liftIO $ putStrLn "partial" 
-      makeRepHtmlJsonFromHamletJson defhlet (A.toJSON (Nothing :: Maybe ModelInfo))
-
-
-getUploadModelFormR :: Handler RepHtml
-getUploadModelFormR = do 
-  ((_,widget),enctype) <- generateFormPost modelForm 
-  defaultLayout [whamlet| 
-<form method=post action=@{UploadModelFormR} enctype=#{enctype}>
-  ^{widget}
-  <input type=submit >
-test 
-|] 
-
-
-
-postUploadModelFormR :: Handler RepHtml
-postUploadModelFormR = do 
-  liftIO $ putStrLn "postUploadModelFormR called"
-  ((result,widget),enctype) <- runFormPost modelForm 
- 
-
-
-  case result of 
-    FormSuccess r -> do 
-      liftIO (LS.putStrLn (Yesod.fileContent (modelFeynRulesFile r)))
-      defaultLayout [whamlet| 
-<p> postUploadModelR called 
-<p> model name = #{show (modelName r)}
-<p> file name = #{show (Yesod.fileName (modelFeynRulesFile r))}
-<p> file content type = #{show (Yesod.fileContentType (modelFeynRulesFile r))}
-|]
-    _ -> defaultLayout [whamlet|
-<p> postUploadModelR called, not Success
-|] 
--}  
