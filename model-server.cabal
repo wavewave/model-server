@@ -1,7 +1,7 @@
 Name:		model-server
-Version:	0.0.2.1
-Synopsis:	FeynRules model retrieving server
-Description: 	FeynRules model retrieving server
+Version:	0.0.999
+Synopsis:	CRUD sample server
+Description: 	CRUD sample server
 License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
@@ -15,11 +15,15 @@ Executable model-server
   Build-Depends: base == 4.*, 
                  mtl == 2.*, 
                  yesod == 0.9.*, 
-                 yesod-core == 0.9.*, 
-                 bytestring == 0.9.*, 
-                 enumerator == 0.4.*, wai-extra, wai, model-server,
-                 model-type, containers, 
-                 acid-state == 0.4.*
+--                 yesod-core == 0.9.*, 
+--                 bytestring == 0.9.*, 
+--                 enumerator == 0.4.*, 
+--                 wai-extra, 
+--                 wai,  
+                 containers == 0.4.*, 
+                 acid-state == 0.6.*, 
+                 model-type >= 0.1.999 && < 0.3,
+                 model-server
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
 
@@ -28,13 +32,22 @@ Library
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
   Build-Depends: base == 4.*, 
-                 containers, 
+                 containers == 0.4.*, 
                  mtl == 2.*, 
-                 yesod == 0.9.*, model-type, safecopy>0.5, 
-                 acid-state == 0.4.*, 
-                 aeson == 0.4.*, bytestring == 0.9.*, 
-                 enumerator == 0.4.* , wai-extra, wai, attoparsec, 
-                 text == 0.11.*, yesod-core>0.9.1, yesod-form>0.3.2, blaze-html>0.4.1
+                 yesod == 0.9.*, 
+                 model-type >= 0.1.999 && < 0.3, 
+                 safecopy == 0.6.*, 
+                 acid-state == 0.6.*, 
+                 aeson == 0.4.*, 
+                 bytestring == 0.9.*, 
+                 enumerator == 0.4.*, 
+                 wai-extra, 
+                 wai, 
+                 attoparsec == 0.10.*, 
+                 text == 0.11.*, 
+                 yesod-core == 0.9.*, 
+                 yesod-form == 0.3.*, 
+                 blaze-html == 0.4.*
   Exposed-Modules: 
                    HEP.Automation.Model.Server.Yesod
                    HEP.Automation.Model.Server.Form
