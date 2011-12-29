@@ -48,7 +48,7 @@ Library
   Exposed-Modules: 
                    HEP.Automation.Model.Server.Type
                    HEP.Automation.Model.Server.Yesod
-                   HEP.Automation.Model.Server.Form
+--                   HEP.Automation.Model.Server.Form
 
 
 		 

@@ -7,31 +7,15 @@
 module HEP.Automation.Model.Server.Yesod where 
 
 import Yesod hiding (update)
-
 import Network.Wai
-import Network.Wai.Parse
-
-import qualified Data.Enumerator as E
+import qualified Data.Enumerator.List as EL
 import qualified Data.ByteString as S
-import qualified Data.ByteString.Char8 as SC
-
-import qualified Data.ByteString.Lazy as LS
-
 import HEP.Automation.Model.Type
 import Data.Acid
-
 import Data.Attoparsec as P
 import Data.Aeson as A
-import Data.Aeson.Parser
-
-import Control.Applicative
-import Data.Text hiding (concat)
-
 import Data.UUID
-
 import HEP.Automation.Model.Server.Type
-import HEP.Automation.Model.Server.Form 
-
 
 mkYesod "ModelServer" [parseRoutes|
 / HomeR GET
@@ -44,21 +28,9 @@ instance Yesod ModelServer where
   approot _ = ""
   maximumContentLength _ _ = 100000000
 
-instance RenderMessage ModelServer FormMessage where
-  renderMessage _ _ = defaultFormMessage
+{-instance RenderMessage ModelServer FormMessage where
+  renderMessage _ _ = defaultFormMessage -}
 
-{-
-makeRepHtmlFromHamlet :: HtmlUrl (Route ModelServer) -> Handler RepHtml
-makeRepHtmlFromHamlet hlet = do
-  RepHtml rhtml <- hamletToRepHtml hlet 
-  return (RepHtml rhtml) 
-
-makeRepHtmlJsonFromHamletJson :: HtmlUrl (Route ModelServer) -> Value -> Handler RepHtmlJson
-makeRepHtmlJsonFromHamletJson hlet j = do
-  RepHtml rhtml <- hamletToRepHtml hlet 
-  RepJson json <- jsonToRepJson j 
-  return (RepHtmlJson rhtml json) 
--}
 
 getHomeR :: Handler RepHtml 
 getHomeR = do 
@@ -73,7 +45,7 @@ getHomeR = do
 |]
 
 
-
+defhlet :: GGWidget m Handler ()
 defhlet = [whamlet| <h1> HTML output not supported |]
 
 
@@ -91,7 +63,7 @@ postUploadModelR = do
   liftIO $ putStrLn "postQueueR called" 
   acid <- return.server_acid =<< getYesod
   _ <- getRequest
-  bs' <- lift E.consume
+  bs' <- lift EL.consume
   let bs = S.concat bs' 
   let parsed = parse json bs 
   case parsed of 
@@ -121,6 +93,7 @@ handleModelR name = do
     "GET" -> getModelR name
     "PUT" -> putModelR name
     "DELETE" -> deleteModelR name
+    x -> error ("No such action " ++ show x ++ " in handlerModelR")
 
 getModelR :: UUID -> Handler RepHtmlJson
 getModelR idee = do 
@@ -136,8 +109,8 @@ putModelR :: UUID -> Handler RepHtmlJson
 putModelR idee = do 
   liftIO $ putStrLn "putModelR called"
   acid <- return.server_acid =<< getYesod
-  wr <- return.reqWaiRequest =<< getRequest
-  bs' <- lift E.consume
+  _wr <- return.reqWaiRequest =<< getRequest
+  bs' <- lift EL.consume
   let bs = S.concat bs'
   let parsed = parse json bs 
   liftIO $ print parsed 
